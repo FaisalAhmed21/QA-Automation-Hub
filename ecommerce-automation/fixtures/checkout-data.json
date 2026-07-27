@@ -1,0 +1,20 @@
+[
+  {
+    "firstName": "Faisal",
+    "lastName": "Ahmed",
+    "postalCode": "1207",
+    "expected": "success"
+  },
+  {
+    "firstName": "",
+    "lastName": "Ahmed",
+    "postalCode": "1207",
+    "expected": "firstNameError"
+  },
+  {
+    "firstName": "Faisal",
+    "lastName": "",
+    "postalCode": "1207",
+    "expected": "lastNameError"
+  }
+]

@@ -1,0 +1,1389 @@
+{
+  "info": {
+    "_postman_id": "task-manager-api-collection",
+    "name": "Task-Manager-API",
+    "description": "REST API Testing Suite for Task Manager API with JWT auth, CRUD operations, and chained lifecycle tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    },
+    {
+      "key": "userBToken",
+      "value": ""
+    },
+    {
+      "key": "taskId",
+      "value": ""
+    },
+    {
+      "key": "userATaskId",
+      "value": ""
+    },
+    {
+      "key": "chainedTaskId",
+      "value": ""
+    },
+    {
+      "key": "chainedAuthToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register - Valid",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const unique = Date.now();",
+                  "pm.collectionVariables.set('testUsername', 'user_' + unique);",
+                  "pm.collectionVariables.set('testEmail', 'user_' + unique + '@example.com');",
+                  "pm.collectionVariables.set('testPassword', 'SecurePass123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has required fields', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('username');",
+                  "    pm.expect(json).to.have.property('email');",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "const schema = {",
+                  "    type: 'object',",
+                  "    required: ['id', 'username', 'email'],",
+                  "    properties: {",
+                  "        id: { type: 'number' },",
+                  "        username: { type: 'string' },",
+                  "        email: { type: 'string' }",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.test('Schema is valid', () => {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register - Duplicate Email (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response contains email error', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('email');",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"duplicate_user\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register - Missing Fields (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation errors', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('object');",
+                  "    pm.expect(Object.keys(json).length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"incomplete_user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login - Valid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has JWT tokens', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('access');",
+                  "    pm.expect(json).to.have.property('refresh');",
+                  "    pm.collectionVariables.set('authToken', json.access);",
+                  "    pm.collectionVariables.set('refreshToken', json.refresh);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "const schema = {",
+                  "    type: 'object',",
+                  "    required: ['access', 'refresh'],",
+                  "    properties: {",
+                  "        access: { type: 'string' },",
+                  "        refresh: { type: 'string' }",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.test('Schema is valid', () => {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token - Valid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains new access token', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('access');",
+                  "    pm.expect(json.access).to.be.a('string');",
+                  "    pm.expect(json.access.length).to.be.above(0);",
+                  "    pm.collectionVariables.set('authToken', json.access);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "const schema = {",
+                  "    type: 'object',",
+                  "    required: ['access'],",
+                  "    properties: {",
+                  "        access: { type: 'string' }",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.test('Schema is valid', () => {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token - Invalid Token (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"invalid.token.value\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token - Missing Token (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Login - Wrong Password (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"WrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Non-existent User (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"nonexistent_user_99999\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks - CRUD",
+      "item": [
+        {
+          "name": "Setup - Register User A",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const unique = Date.now();",
+                  "pm.collectionVariables.set('userAUsername', 'userA_' + unique);",
+                  "pm.collectionVariables.set('userAEmail', 'userA_' + unique + '@example.com');",
+                  "pm.collectionVariables.set('userAPassword', 'SecurePass123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userAUsername}}\",\n  \"email\": \"{{userAEmail}}\",\n  \"password\": \"{{userAPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Setup - Login User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('authToken', jsonData.access);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userAUsername}}\",\n  \"password\": \"{{userAPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "Create Task - Valid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has required fields', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('title');",
+                  "    pm.collectionVariables.set('taskId', json.id);",
+                  "    pm.collectionVariables.set('userATaskId', json.id);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "const schema = {",
+                  "    type: 'object',",
+                  "    required: ['id', 'title', 'completed', 'created_at'],",
+                  "    properties: {",
+                  "        id: { type: 'number' },",
+                  "        title: { type: 'string' },",
+                  "        completed: { type: 'boolean' },",
+                  "        created_at: { type: 'string' }",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.test('Schema is valid', () => {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Complete API testing assignment\",\n  \"completed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Create Task - No Auth Token (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized task attempt\",\n  \"completed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Create Task - Missing Required Field (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has title validation error', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('title');",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Get All Tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "const schema = {",
+                  "    type: 'array',",
+                  "    items: {",
+                  "        type: 'object',",
+                  "        required: ['id', 'title', 'completed', 'created_at'],",
+                  "        properties: {",
+                  "            id: { type: 'number' },",
+                  "            title: { type: 'string' },",
+                  "            completed: { type: 'boolean' },",
+                  "            created_at: { type: 'string' }",
+                  "        }",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.test('Schema is valid', () => {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Task - Valid ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has required fields', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('title');",
+                  "    pm.expect(json.id).to.eql(parseInt(pm.collectionVariables.get('taskId')));",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "const schema = {",
+                  "    type: 'object',",
+                  "    required: ['id', 'title', 'completed', 'created_at'],",
+                  "    properties: {",
+                  "        id: { type: 'number' },",
+                  "        title: { type: 'string' },",
+                  "        completed: { type: 'boolean' },",
+                  "        created_at: { type: 'string' }",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.test('Schema is valid', () => {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Task - Invalid ID (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "999999"]
+            }
+          }
+        },
+        {
+          "name": "Update Task - Valid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has updated fields', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.title).to.eql('Updated task title');",
+                  "    pm.expect(json.completed).to.eql(true);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "const schema = {",
+                  "    type: 'object',",
+                  "    required: ['id', 'title', 'completed', 'created_at'],",
+                  "    properties: {",
+                  "        id: { type: 'number' },",
+                  "        title: { type: 'string' },",
+                  "        completed: { type: 'boolean' },",
+                  "        created_at: { type: 'string' }",
+                  "    }",
+                  "};",
+                  "",
+                  "pm.test('Schema is valid', () => {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated task title\",\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            }
+          }
+        },
+        {
+          "name": "Setup - Register User B",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const unique = Date.now();",
+                  "pm.collectionVariables.set('userBUsername', 'userB_' + unique);",
+                  "pm.collectionVariables.set('userBEmail', 'userB_' + unique + '@example.com');",
+                  "pm.collectionVariables.set('userBPassword', 'SecurePass123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userBUsername}}\",\n  \"email\": \"{{userBEmail}}\",\n  \"password\": \"{{userBPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Setup - Login User B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('userBToken', jsonData.access);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userBUsername}}\",\n  \"password\": \"{{userBPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "Update Task - Not Owner (negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403 or 404 (authorization denied)', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userBToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hacked task title\",\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{userATaskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{userATaskId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Task - Valid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is correct', () => {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Response time under 500ms', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chained Flow",
+      "item": [
+        {
+          "name": "Register → Login → Refresh → Create → Update → Delete (full lifecycle)",
+          "item": [
+            {
+              "name": "1. Register",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const unique = Date.now();",
+                      "pm.collectionVariables.set('chainedUsername', 'chained_' + unique);",
+                      "pm.collectionVariables.set('chainedEmail', 'chained_' + unique + '@example.com');",
+                      "pm.collectionVariables.set('chainedPassword', 'SecurePass123!');"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is correct', () => {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test('Response has required fields', () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json).to.have.property('id');",
+                      "    pm.expect(json).to.have.property('username');",
+                      "    pm.expect(json).to.have.property('email');",
+                      "});",
+                      "",
+                      "pm.test('Response time under 500ms', () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{chainedUsername}}\",\n  \"email\": \"{{chainedEmail}}\",\n  \"password\": \"{{chainedPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "register"]
+                }
+              }
+            },
+            {
+              "name": "2. Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is correct', () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const jsonData = pm.response.json();",
+                      "pm.collectionVariables.set('chainedAuthToken', jsonData.access);",
+                      "pm.collectionVariables.set('chainedRefreshToken', jsonData.refresh);",
+                      "",
+                      "pm.test('JWT token captured', () => {",
+                      "    pm.expect(jsonData.access).to.be.a('string');",
+                      "    pm.expect(jsonData.access.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test('Response time under 500ms', () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{chainedUsername}}\",\n  \"password\": \"{{chainedPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "login"]
+                }
+              }
+            },
+            {
+              "name": "3. Refresh Token (mid-session renewal)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is correct', () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const jsonData = pm.response.json();",
+                      "pm.collectionVariables.set('chainedAuthToken', jsonData.access);",
+                      "",
+                      "pm.test('New access token captured after refresh', () => {",
+                      "    pm.expect(jsonData.access).to.be.a('string');",
+                      "    pm.expect(jsonData.access.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test('Response time under 500ms', () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh\": \"{{chainedRefreshToken}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/refresh",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "refresh"]
+                }
+              }
+            },
+            {
+              "name": "4. Create Task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is correct', () => {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test('Response has required fields', () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json).to.have.property('id');",
+                      "    pm.expect(json).to.have.property('title');",
+                      "    pm.collectionVariables.set('chainedTaskId', json.id);",
+                      "});",
+                      "",
+                      "pm.test('Response time under 500ms', () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "const schema = {",
+                      "    type: 'object',",
+                      "    required: ['id', 'title', 'completed', 'created_at'],",
+                      "    properties: {",
+                      "        id: { type: 'number' },",
+                      "        title: { type: 'string' },",
+                      "        completed: { type: 'boolean' },",
+                      "        created_at: { type: 'string' }",
+                      "    }",
+                      "};",
+                      "",
+                      "pm.test('Schema is valid', () => {",
+                      "    pm.response.to.have.jsonSchema(schema);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{chainedAuthToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Chained flow test task\",\n  \"completed\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/tasks",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "tasks"]
+                }
+              }
+            },
+            {
+              "name": "5. Update Task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is correct', () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Task was updated', () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.title).to.eql('Chained flow updated task');",
+                      "    pm.expect(json.completed).to.eql(true);",
+                      "});",
+                      "",
+                      "pm.test('Response time under 500ms', () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{chainedAuthToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Chained flow updated task\",\n  \"completed\": true\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/tasks/{{chainedTaskId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "tasks", "{{chainedTaskId}}"]
+                }
+              }
+            },
+            {
+              "name": "6. Delete Task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is correct', () => {",
+                      "    pm.response.to.have.status(204);",
+                      "});",
+                      "",
+                      "pm.test('Response time under 500ms', () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{chainedAuthToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/tasks/{{chainedTaskId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "tasks", "{{chainedTaskId}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

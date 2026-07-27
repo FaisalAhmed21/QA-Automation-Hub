@@ -1,0 +1,12 @@
+{
+  "name": "rest-api-testing-suite",
+  "version": "1.0.0",
+  "description": "Task Manager API testing with Newman",
+  "scripts": {
+    "test:api": "newman run Task-Manager-API.postman_collection.json -e staging.postman_environment.json -r htmlextra --reporter-htmlextra-export ./reports/api-report.html"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}

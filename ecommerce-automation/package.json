@@ -1,0 +1,24 @@
+{
+  "name": "ecommerce-automation",
+  "version": "1.0.0",
+  "description": "Playwright E-Commerce Automation Framework for Sauce Demo",
+  "scripts": {
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:cross": "playwright test --project=chromium --project=firefox --project=webkit",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report",
+    "allure:generate": "allure generate ./allure-results --clean",
+    "allure:open": "allure open"
+  },
+  "keywords": ["playwright", "automation", "e2e", "testing", "page-object-model"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "@types/node": "^26.1.1",
+    "allure-playwright": "^3.10.2",
+    "typescript": "^7.0.2"
+  }
+}
