@@ -7,7 +7,7 @@ A monorepo combining a full UI test automation framework and a REST API test sui
 
 ## What This Is
 
-This repo brings together two independent test projects and runs both automatically on every push, pull request, and nightly schedule — the same way a real QA/delivery pipeline would gate code changes before they reach production.
+This repo brings together two independent test projects and runs both automatically on every push, pull request, and nightly schedule the same way a real QA/delivery pipeline would gate code changes before they reach production.
 
 | Project | What it tests | Stack |
 |---|---|---|
@@ -31,15 +31,15 @@ Two independent GitHub Actions workflows run on every `push` and `pull_request` 
 - Runs the full Postman collection headlessly via Newman
 - Uploads the Newman HTML report as a build artifact, even on failure
 
-Both pipelines are designed so a broken build produces evidence (reports, traces) automatically — not just a red X with no context.
+Both pipelines are designed so a broken build produces evidence (reports, traces) automatically, not just a X with no context.
 
 ## Why a Monorepo
 
-Keeping both projects together, with CI wired across both, mirrors how many real QA/SDET roles work day to day: maintaining multiple test suites (UI and API) against the same product surface, with a single pipeline enforcing both on every change. It also makes the CI/CD design itself a demonstrable piece of work, not just an implementation detail — the workflows are reviewable here in one place, alongside what they test.
+Keeping both projects together, with CI wired across both, mirrors how many real QA/SDET roles work day to day: maintaining multiple test suites (UI and API) against the same product surface, with a single pipeline enforcing both on every change. It also makes the CI/CD design itself a demonstrable piece of work, not just an implementation detail, the workflows are reviewable here in one place, alongside what they test.
 
 ## Running Locally
 
-Each project can be run independently — see their individual READMEs for full setup instructions:
+Each project can be run independently, see their individual READMEs for full setup instructions:
 - [`ecommerce-automation/README.md`](./ecommerce-automation/README.md)
 - [`task-manager-api-tests/README.md`](./task-manager-api-tests/README.md)
 
