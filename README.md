@@ -2,8 +2,8 @@
 
 A monorepo combining a full UI test automation framework and a REST API test suite, wired into a shared CI/CD pipeline via GitHub Actions.
 
-![UI Tests](https://github.com/FaisalAhmed21/qa-automation-hub/actions/workflows/ui-tests.yml/badge.svg)
-![API Tests](https://github.com/FaisalAhmed21/qa-automation-hub/actions/workflows/api-tests.yml/badge.svg)
+![UI Tests](https://github.com/FaisalAhmed21/QA-Automation-Hub/actions/workflows/ui-tests.yml/badge.svg)
+![API Tests](https://github.com/FaisalAhmed21/QA-Automation-Hub/actions/workflows/api-tests.yml/badge.svg)
 
 ## What This Is
 
