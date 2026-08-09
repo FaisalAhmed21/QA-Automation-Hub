@@ -4,7 +4,7 @@ export class BasePage {
   constructor(protected page: Page) {}
 
   async goto(path: string) {
-    await this.page.goto(path);
+    await this.page.goto(path, { waitUntil: 'domcontentloaded' });
   }
 
   async waitAndClick(locator: Locator) {

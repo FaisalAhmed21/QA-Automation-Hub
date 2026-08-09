@@ -8,7 +8,7 @@ export class InventoryPage extends BasePage {
   private itemNames = this.page.locator('.inventory_item_name');
   private itemPrices = this.page.locator('.inventory_item_price');
   private cartBadge = this.page.locator('.shopping_cart_badge');
-  private cartLink = this.page.locator('.shopping_cart_link');
+  private cartLink = this.page.locator('.shopping_cart_link').first();
 
   async isLoaded(): Promise<boolean> {
     return this.inventoryContainer.isVisible();
