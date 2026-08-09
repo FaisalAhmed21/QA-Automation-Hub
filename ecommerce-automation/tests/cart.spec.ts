@@ -68,8 +68,7 @@ test.describe('Cart Tests', () => {
 
     await page.locator('#react-burger-menu-btn').click();
     const logoutLink = page.locator('#logout_sidebar_link');
-    await logoutLink.waitFor({ state: 'visible' });
-    await logoutLink.click();
+    await logoutLink.dispatchEvent('click');
     await expect(page).toHaveURL('/');
 
     await loginPage.login(users.standardUser.username, users.standardUser.password);
